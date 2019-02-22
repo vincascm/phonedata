@@ -9,8 +9,14 @@ use failure::{Fail, Fallible};
 
 #[derive(Fail, Debug)]
 pub enum ErrorKind {
-    #[fail(display = "{}", _0)]
-    BusiReqErr(String),
+    #[fail(display = "invalid phone database.")]
+    InvalidPhoneDatabase,
+    #[fail(display = "length of phone number is invalid.")]
+    InvalidLength,
+    #[fail(display = "can not find this phone number in database.")]
+    NotFound,
+    #[fail(display = "invalid number to representative Communications Operators.")]
+    InvalidOpNo,
 }
 
 #[derive(Debug, Serialize)]
@@ -101,7 +107,7 @@ impl PhoneData {
             let record = String::from_utf8(record.to_vec())?;
             let record: Vec<&str> = record.split('|').collect();
             if record.len() != 4 {
-                return Err(ErrorKind::BusiReqErr("invalid phone database.".to_string()).into());
+                return Err(ErrorKind::InvalidPhoneDatabase.into());
             }
             Ok(Records {
                 province: record[0].to_string(),
@@ -110,7 +116,7 @@ impl PhoneData {
                 area_code: record[3].to_string(),
             })
         } else {
-            Err(ErrorKind::BusiReqErr("invalid phone database.".to_string()).into())
+            Err(ErrorKind::InvalidPhoneDatabase.into())
         }
     }
 
@@ -118,7 +124,7 @@ impl PhoneData {
     pub fn find(&self, no: &str) -> Fallible<PhoneNoInfo> {
         let len = no.len();
         if len < 7 || len > 11 {
-            return Err(ErrorKind::BusiReqErr("length of phone number is invalid.".to_string()).into());
+            return Err(ErrorKind::InvalidLength.into());
         }
         let no: i32 = no[..7].parse()?;
 
@@ -128,7 +134,7 @@ impl PhoneData {
         loop {
             let new_mid = (left + right) / 2;
             if new_mid == mid {
-                break Err(ErrorKind::BusiReqErr("can not find this phone number in database.".to_string()).into());
+                break Err(ErrorKind::NotFound.into());
             }
             mid = new_mid;
             let mid_index = &self.index[mid];
@@ -171,7 +177,7 @@ impl CardType {
             4 => Ok(CardType::CtccV),
             5 => Ok(CardType::CuccV),
             6 => Ok(CardType::CmccV),
-            _ => Err(ErrorKind::BusiReqErr("invalid number to representative Communications Operators.".to_string()).into()),
+            _ => Err(ErrorKind::InvalidOpNo.into()),
         }
     }
 
@@ -186,8 +192,6 @@ impl CardType {
         }
     }
 }
-
-
 
 #[derive(Debug, Serialize)]
 pub struct PhoneNoInfo {

@@ -1,0 +1,10 @@
+[package]
+name = "phonedata"
+version = "0.1.0"
+authors = ["vinoca <vinoca@vinoca.org>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.88"
+serde_derive = "1.0.88"
+failure = "0.1.5"
